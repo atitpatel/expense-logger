@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>426317309615-gs1tn23sk6cefbjt68j2l72e3p1q27au.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.426317309615-gs1tn23sk6cefbjt68j2l72e3p1q27au</string>
+	<key>API_KEY</key>
+	<string>AIzaSyB4I5ODx-kXJVA3No2JaDDRQcgrydTkZTY</string>
+	<key>GCM_SENDER_ID</key>
+	<string>426317309615</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>org.reactjs.native.example.expenseTracker</string>
+	<key>PROJECT_ID</key>
+	<string>expense-logger-ad35e</string>
+	<key>STORAGE_BUCKET</key>
+	<string>expense-logger-ad35e.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:426317309615:ios:54aa24226fbabc374ad65a</string>
+	<key>DATABASE_URL</key>
+	<string>https://expense-logger-ad35e.firebaseio.com</string>
+</dict>
+</plist>

@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import { View, Text, StyleSheet, TextInput, Button } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { addExpense } from '../../firebase/api';
 
 const styles = StyleSheet.create({
     container: {
@@ -107,6 +108,21 @@ export const ExpenseLogger = () => {
 
     const onSubmit = () => {
         console.log("Submitting", date, category, description);
+        addExpense({
+            category: category,
+            description: description,
+            date: date
+        });
+
+        // firebase.firestore().collection('expenses').add({
+        //     category: category,
+        //     description: description,
+        //     date: date
+        // }).then(() => {
+        //     console.log('Data entered successfully');
+        // }).catch(() => {
+        //     console.log('Error in data');
+        // })
     }
     
     const onCancel = () => {
