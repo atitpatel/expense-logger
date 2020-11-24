@@ -5,17 +5,8 @@ import { View, Text, StyleSheet, TextInput, Button, TouchableOpacity, Modal,
 import DateTimePicker from '@react-native-community/datetimepicker';
 import ImagePicker from 'react-native-image-picker';
 import { addExpense } from '../../firebase/api';
+import { imagePickerOptions } from '../../utils';
 import styles from './styles';
-
-const shortid = require('shortid');
-
-const options = {
-    title: 'Select Receipt',
-    storageOptions: {
-      skipBackup: true,
-      path: 'images',
-    },
-  };
 
 
 
@@ -85,8 +76,7 @@ export const ExpenseLogger = () => {
     const [amount, setAmount] = useState();
     const [showModal, setShowModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [imageUri, setImageUri ] = useState(null);
-    const [imageName, setImageName ] = useState(null);
+    const [imageResponse, setImageResponse ] = useState(null);
 
     const clearAllFields = () => {
         setDate(new Date);
@@ -96,27 +86,28 @@ export const ExpenseLogger = () => {
     }
 
     const onSubmit = () => {
-        // setIsLoading(true);
+        setIsLoading(true);
         // const errors = checkValidations();
-        console.log("Fields....", amount)
-        addExpense({
-            category: category,
-            description: description,
-            date: date,
-            amount: amount,
-            // image: {
-            //     uri: imageUri,
-            //     name: imageName
-            // }
-        }, (result) => {
-            if(result) {
-                Alert.alert('Expense Added Successfully');
-            } else {
-                Alert.alert(`There's something wrong. Couldn't add data`);
-            }
+        try {
+            addExpense({
+                category: category,
+                description: description,
+                date: date,
+                amount: amount,
+                image: imageResponse
+            }, (result) => {
+                if(result) {
+                    Alert.alert('Expense Added Successfully');
+                } else {
+                    Alert.alert(`There's something wrong. Couldn't add data`);
+                }
+                setIsLoading(false);
+                clearAllFields();
+            });
+        } catch(e) {
+            // Error logging and reporting
             setIsLoading(false);
-            clearAllFields();
-        });
+        }
     }
     
     const onCancel = () => {
@@ -138,33 +129,6 @@ export const ExpenseLogger = () => {
                 setDescription(value);
                 break;
         }
-    }
-
-    const getFileName = (name, path) => {
-        if (name != null) { return name; }
-
-        if (Platform.OS === "ios") {
-            path = "~" + path.substring(path.indexOf("/Documents"));
-        }
-        return path.split("/").pop();
-    }
-
-    const getPlatformPath = ({ path, uri }) => {
-        return Platform.select({
-            android: { "value": path },
-            ios: { "value": uri }
-        })
-    }
-
-    const getPlatformURI = (imagePath) => {
-        let imgSource = imagePath;
-        if (isNaN(imagePath)) {
-            imgSource = { uri: this.state.imagePath };
-            if (Platform.OS == 'android') {
-                imgSource.uri = "file:///" + imgSource.uri;
-            }
-        }
-        return imgSource
     }
 
     const renderModal = () => {
@@ -199,12 +163,7 @@ export const ExpenseLogger = () => {
                     <TouchableHighlight
                         style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
                         onPress={() => ImagePicker.launchImageLibrary(
-                            {
-                                mediaType: 'photo',
-                                includeBase64: false,
-                                maxHeight: 200,
-                                maxWidth: 200,
-                              },
+                            imagePickerOptions,
                             (response) => {
                                 console.log("Response....", response);
                                 if (response.didCancel) {
@@ -212,12 +171,7 @@ export const ExpenseLogger = () => {
                                   } else if (response.error) {
                                     console.log('ImagePicker Error: ', response.error);
                                   } else {
-                                    // const uri = response.uri;
-                                    let path = getPlatformPath(response).value;
-                                    let fileName = getFileName(response.fileName, path);
-                                    console.log("Parh....filename", path, fileName);
-                                    setImageUri(response.data);
-                                    setImageName(fileName);
+                                    setImageResponse(response);
                                   }  
                                 setShowModal(false);
                             },

@@ -1,38 +1,48 @@
 import { useCallback } from 'react';
-import { firebase } from './config';
+import { firebase, storageRef } from './config';
+import { getFileLocalPath, getFileName } from '../utils';
 
-export const uploadImage = (image) => {
-    console.log("Uploading ", image);
-    // Create a root reference
-    const storageRef = firebase.storage().ref();
-    firebase.storage()
-        .ref()
-        .child(`/images/${image.name}`)
-        .putData(image.uri)
-        .then((snapshot) => {
-            //You can check the image is now uploaded in the storage bucket
-            console.log(`${image.name} has been successfully uploaded.`);
-        })
-        .catch((e) => console.log('uploading image error => ', e));
+const uploadImage = async response => {
+    const fileSource = getFileLocalPath(response);
+    const fileName = getFileName(response.fileName, fileSource);
+    try{
+        const response = await storageRef.ref(fileName).putFile(fileSource);
+        const url = await storageRef.ref(`/${fileName}`).getDownloadURL();
+        return Promise.resolve(url);
+    } catch(e) {
+        // Error logging
+        console.log("errror,,,,", e);
+        return Promise.resolve(null);
+    }
 }
 
 export const addExpense = (data, callback) => {
-    const { category, date, description, amount } = data;
-    console.log("Data adding", data);
-    firebase.firestore().collection('expenses')
-        .add({
-            amount: amount,
-            category: category,
-            date: new Date(date),
-            description: description
-        })
-        .then( () => {
-            console.log("Data entered successfully");
-            callback(true);
-        }).catch( (e) => {
-            console.log("Error", e)
+    const { category, date, description, amount, image } = data;
+    console.log("Image.....", image);
+    uploadImage(image).then((downloadUrl) => {
+        if(downloadUrl) {
+            firebase.firestore().collection('expenses')
+                .add({
+                    amount: amount,
+                    category: category,
+                    date: new Date(date),
+                    description: description,
+                    image: downloadUrl
+                })
+                .then( () => {
+                    console.log("Data entered successfully");
+                    callback(true);
+                }).catch( (e) => {
+                    console.log("Error", e)
+                    callback(false);
+                });
+        } else {
             callback(false);
-        });
+        }
+    }).catch(e => {
+        callback(false)
+    });
+    
 };
 
 

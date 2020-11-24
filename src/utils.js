@@ -8,3 +8,23 @@ export const getMonthName = (date) => {
     } 
     return null;
 };
+
+export const imagePickerOptions = {
+  noData: true,
+};
+
+export const getFileLocalPath = response => {
+  console.log("util func", response);
+  const { path, uri } = response;
+  return Platform.OS === 'android' ? path : uri;
+};
+
+export const getFileName = (name, path) => {
+  if (name) { 
+    return storageRef.ref(name);; 
+  }
+  if (Platform.OS === "ios") {
+      path = "~" + path.substring(path.indexOf("/Documents"));
+  }
+  return path.split("/").pop();
+}

@@ -1,6 +1,7 @@
 import * as firebase from 'firebase';
 import '@firebase/storage';
 import '@firebase/firestore';
+import storage from '@react-native-firebase/storage';
 
 const firebaseConfig = {
     apiKey: "AIzaSyC4KVlBsdY5-r-Fddu8zI2_8ghrMC_aHjI",
@@ -12,10 +13,10 @@ const firebaseConfig = {
     appId: "1:1006201176529:web:690fb05eb0dbe2528d60f0"
 };
 
-let storageRef = null;
+let storageRef = storage();
 
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-export { firebase };
+export { firebase, storageRef };
