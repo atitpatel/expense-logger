@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -17,6 +17,7 @@ import {
   Button,
 } from 'react-native';
 import {ExpenseLogger} from './src/Components/ExpenseLogger';
+import {History} from './src/Components/History';
 
 import {
   Header,
@@ -27,21 +28,41 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 
 const App: () => React$Node = () => {
+  const [showHistory, setShowHistory] = useState(false);
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <ExpenseLogger />
-          <View style={styles.footer}>
-            <Button
-              onPress={this.onSubmit}
-              title='View History'
-            />
-          </View>
-        </ScrollView>
+        {
+          !showHistory ? 
+            (
+              <ScrollView
+                contentInsetAdjustmentBehavior="automatic"
+                style={styles.scrollView}>
+                  <ExpenseLogger />
+                <View style={styles.footer}>
+                  <Button
+                    onPress={() => setShowHistory(!showHistory)}
+                    title= 'View History'
+                  />
+                </View>
+              </ScrollView>
+            ) : 
+            (
+              <View style={styles.scrollView}>
+                <History />
+                <View style={styles.footer}>
+                  <Button
+                    onPress={() => setShowHistory(!showHistory)}
+                    title= 'Add Expense'
+                  />
+                </View>
+              </View>
+
+            )
+        }
+        
       </SafeAreaView>
     </>
   );

@@ -1,61 +1,13 @@
 import React, {useState} from 'react';
-import { View, Text, StyleSheet, TextInput, Button } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Button, TouchableOpacity, Modal,
+    TouchableHighlight, 
+    Alert} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import ImagePicker from 'react-native-image-picker';
 import { addExpense } from '../../firebase/api';
+import styles from './styles';
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    header: {
-        fontWeight: 'bold',
-        fontSize: 30,
-        color: 'black',
-        marginTop: 20
-    },
-    formContainer: {
-        flex: 1,
-        paddingTop: 20
-    },
-    titleText: {
-        fontWeight: "200",
-        color: 'orange',
-        fontSize: 14,
-    },
-    input: {
-        marginTop: 5,
-        borderColor: 'gray',
-        borderWidth: 1,
-        borderRadius: 4,
-        width: 200,
-        height: 45,
-        padding: 15,
-        paddingTop: 15
-    },
-    inputContainer: {
-        flex: 1,
-        marginTop: 20
-    },
-    buttonArea: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginTop: 30
-    },
-    button: {
-        backgroundColor: 'red',
-        borderRadius: 4,
-        borderWidth: 1,
-        borderStyle: 'solid',
-        width: '30%',
-        height: 50
-    },
-    description: {
-        height: 125,
-        width: 200
-    }
-})
+
 
 const ExpenseTextInput = (props) => {
     return(
@@ -74,7 +26,6 @@ const ExpenseTextInput = (props) => {
 const ExpenseDate = (props) => {
     const [showDate, setShow] = useState(true);
     const onChange = (event, selectedDate) => {
-        console.log("kajsdfjasdf", selectedDate);
         const currentDate = selectedDate || date;
         setShow(Platform.OS === 'ios');
         props.onDateChange('date', currentDate);
@@ -88,6 +39,7 @@ const ExpenseDate = (props) => {
     return (
         <View style={styles.inputContainer}>
                 <Text style={styles.titleText}>Date</Text>
+                <View style={styles.dateTime}>
                     <DateTimePicker
                         {...props}
                         testID="dateTimePicker"
@@ -95,8 +47,23 @@ const ExpenseDate = (props) => {
                         is24Hour={true}
                         display="default"
                         onChange={onChange}
+                        style={{ text: 'center'}}
                     />
+                </View>
             </View>
+    )
+}
+
+const ExpenseImage = (props) => {
+    return(
+        <View style={styles.inputContainer}>
+            <TouchableOpacity
+                style = {styles.attachButton}
+                onPress = {props.onPress}
+            >
+                <Text style = {styles.attachText}>Attach Receipt 📎</Text>
+            </TouchableOpacity>
+        </View>
     )
 }
 
@@ -105,24 +72,35 @@ export const ExpenseLogger = () => {
     const [date, setDate] = useState(new Date());
     const [category, setCategory] = useState('');
     const [description, setDescription] = useState('');
+    const [amount, setAmount] = useState();
+    const [showModal, setShowModal] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [response, setResponse] = React.useState(null);
+
+    const clearAllFields = () => {
+        setDate(new Date);
+        setCategory('');
+        setDescription('');
+        setAmount('');
+    }
 
     const onSubmit = () => {
-        console.log("Submitting", date, category, description);
+        setIsLoading(true);
+        // const errors = checkValidations();
         addExpense({
             category: category,
             description: description,
-            date: date
+            date: date,
+            amout: amount
+        }, (result) => {
+            if(result) {
+                Alert.alert('Expense Added Successfully');
+            } else {
+                Alert.alert(`There's something wrong. Couldn't add data`);
+            }
+            setIsLoading(false);
+            clearAllFields();
         });
-
-        // firebase.firestore().collection('expenses').add({
-        //     category: category,
-        //     description: description,
-        //     date: date
-        // }).then(() => {
-        //     console.log('Data entered successfully');
-        // }).catch(() => {
-        //     console.log('Error in data');
-        // })
     }
     
     const onCancel = () => {
@@ -137,15 +115,84 @@ export const ExpenseLogger = () => {
             case 'category':
                 setCategory(value);
                 break;
+            case 'amount':
+                setAmount(value);
+                break;
             default:
                 setDescription(value);
                 break;
         }
     }
 
+    const renderModal = () => {
+        return(
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={showModal}
+                onRequestClose={() => {
+                    console.log("Modal has been closed.");
+                }}
+            >
+                <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                    <TouchableHighlight
+                        style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                        onPress={() => ImagePicker.launchCamera(
+                            {
+                              mediaType: 'photo',
+                              includeBase64: false,
+                              maxHeight: 200,
+                              maxWidth: 200,
+                            },
+                            (response) => {
+                              setResponse(response);
+                              setShowModal(false);
+                            },
+                          )}
+                    >
+                        <Text style={styles.textStyle}>Using Camera</Text>
+                    </TouchableHighlight>
+                    <TouchableHighlight
+                        style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                        onPress={() => ImagePicker.launchImageLibrary(
+                            {
+                              mediaType: 'photo',
+                              includeBase64: false,
+                              maxHeight: 200,
+                              maxWidth: 200,
+                            },
+                            (response) => {
+                              setResponse(response);
+                              setShowModal(false);
+                            },
+                          )
+                        }
+                    >
+                        <Text style={styles.textStyle}>From Library</Text>
+                    </TouchableHighlight>
+                    <View style = {{ marginTop: 30 }}>
+                        <Button 
+                            title = "Cancel"
+                            onPress={() => setShowModal(!showModal)}
+                        />
+                    </View>
+                </View>
+                </View>
+            </Modal>
+        );
+    }
+
     const renderForm = () => {
         return(
             <View style={styles.formContainer}>
+                <ExpenseTextInput
+                    title = "Amount"
+                    placeholder = "e.g. 123.45"
+                    onChangeText={text => onValueChange('amount', text)}
+                    keyboardType = {'decimal-pad'}
+                    value={amount}
+                />
                 <ExpenseTextInput
                     title = "Description"
                     multiline
@@ -165,14 +212,17 @@ export const ExpenseLogger = () => {
                     onDateChange={(key, value) => onValueChange(key, value)}
                     value={date}
                 />
+                <ExpenseImage 
+                    onPress = {() => setShowModal(!showModal)}
+                />
+
                 <View style={styles.buttonArea}>
                     <Button 
-                        style={styles.button}
                         onPress={onSubmit}
                         title='Submit'
+                        disabled = {isLoading}
                     />
                     <Button 
-                        style={styles.button}
                         onPress={onCancel}
                         title='Cancel'
                     />
@@ -183,6 +233,7 @@ export const ExpenseLogger = () => {
 
     return(
         <View style={styles.container}>
+            {renderModal()}
             <Text style={styles.header}> Expense Logger</Text>
             {renderForm()}
         </View>
