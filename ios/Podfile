@@ -10,7 +10,9 @@ target 'expenseTracker' do
 
   pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
 
-  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+  
+  # add pods for desired Firebase products
+  # https://firebase.google.com/docs/ios/setup#available-pods
 
   target 'expenseTrackerTests' do
     inherit! :complete
