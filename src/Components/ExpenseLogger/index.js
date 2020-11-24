@@ -7,6 +7,16 @@ import ImagePicker from 'react-native-image-picker';
 import { addExpense } from '../../firebase/api';
 import styles from './styles';
 
+const shortid = require('shortid');
+
+const options = {
+    title: 'Select Receipt',
+    storageOptions: {
+      skipBackup: true,
+      path: 'images',
+    },
+  };
+
 
 
 const ExpenseTextInput = (props) => {
@@ -75,7 +85,8 @@ export const ExpenseLogger = () => {
     const [amount, setAmount] = useState();
     const [showModal, setShowModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [response, setResponse] = React.useState(null);
+    const [imageUri, setImageUri ] = useState(null);
+    const [imageName, setImageName ] = useState(null);
 
     const clearAllFields = () => {
         setDate(new Date);
@@ -85,13 +96,18 @@ export const ExpenseLogger = () => {
     }
 
     const onSubmit = () => {
-        setIsLoading(true);
+        // setIsLoading(true);
         // const errors = checkValidations();
+        console.log("Fields....", amount)
         addExpense({
             category: category,
             description: description,
             date: date,
-            amout: amount
+            amount: amount,
+            // image: {
+            //     uri: imageUri,
+            //     name: imageName
+            // }
         }, (result) => {
             if(result) {
                 Alert.alert('Expense Added Successfully');
@@ -122,6 +138,33 @@ export const ExpenseLogger = () => {
                 setDescription(value);
                 break;
         }
+    }
+
+    const getFileName = (name, path) => {
+        if (name != null) { return name; }
+
+        if (Platform.OS === "ios") {
+            path = "~" + path.substring(path.indexOf("/Documents"));
+        }
+        return path.split("/").pop();
+    }
+
+    const getPlatformPath = ({ path, uri }) => {
+        return Platform.select({
+            android: { "value": path },
+            ios: { "value": uri }
+        })
+    }
+
+    const getPlatformURI = (imagePath) => {
+        let imgSource = imagePath;
+        if (isNaN(imagePath)) {
+            imgSource = { uri: this.state.imagePath };
+            if (Platform.OS == 'android') {
+                imgSource.uri = "file:///" + imgSource.uri;
+            }
+        }
+        return imgSource
     }
 
     const renderModal = () => {
@@ -157,14 +200,26 @@ export const ExpenseLogger = () => {
                         style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
                         onPress={() => ImagePicker.launchImageLibrary(
                             {
-                              mediaType: 'photo',
-                              includeBase64: false,
-                              maxHeight: 200,
-                              maxWidth: 200,
-                            },
+                                mediaType: 'photo',
+                                includeBase64: false,
+                                maxHeight: 200,
+                                maxWidth: 200,
+                              },
                             (response) => {
-                              setResponse(response);
-                              setShowModal(false);
+                                console.log("Response....", response);
+                                if (response.didCancel) {
+                                    console.log('User cancelled image picker');
+                                  } else if (response.error) {
+                                    console.log('ImagePicker Error: ', response.error);
+                                  } else {
+                                    // const uri = response.uri;
+                                    let path = getPlatformPath(response).value;
+                                    let fileName = getFileName(response.fileName, path);
+                                    console.log("Parh....filename", path, fileName);
+                                    setImageUri(response.data);
+                                    setImageName(fileName);
+                                  }  
+                                setShowModal(false);
                             },
                           )
                         }

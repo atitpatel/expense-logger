@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, SectionList, StyleSheet, TextInput } from 'react-native';
+import { View, Text, SectionList, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 import { getExpenses } from '../../firebase/api';
 import { getMonthName } from '../../utils';
 import styles from './styles';
@@ -10,11 +11,12 @@ export const History = () => {
     const [masterList, setMasterList] = useState([]);
     const [list, setList] = useState([]);
     const [searchText, setSearchText] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [filterText, setFilterText] = useState('');
+    const [categories, setCategories] = useState([]);
+    const [isFilterOn, setIsFilterOn] = useState(false);
 
     prepareDataSource = (result) => {
-        console.log(
-            'paramsss', result
-        )
         const dataSource = result.reduce( (sections, item) => {
                 
             const itemMonth = getMonthName(item.date);
@@ -27,10 +29,7 @@ export const History = () => {
                 section = { type : itemTitle, data : [], sum: 0 };
                 sections.push(section);
             }
-            console.log("Amoutn....", section.sum, item)
             section.sum += parseFloat(item.amount);
-            
-        
             section.data.push(item);
         
             return sections;
@@ -39,24 +38,38 @@ export const History = () => {
     }
 
     useEffect( () => {
+        setLoading(true);
         getExpenses().then((result) => {
-
             setMasterList(result);
-            
+            let categorySet = new Set();
+            result.forEach(ele => categorySet.add(ele.category));
+            setCategories(Array.from(categorySet));
             const dataSource = result.length ? prepareDataSource(result) : [];
-            console.log("Data Source", dataSource);
             setList(dataSource);
+            setLoading(false);
+        }).catch((e) => {
+            // Log error here
+            Alert.alert("Something went wrong");
+            setLoading(false);
         });
          
     }, []);
 
-    searchAndFilter = (text) => {
-        setSearchText(text);
-        if(text) {
-            const resultList = masterList.filter( expense => expense.description.includes(text));
+    searchAndFilter = (text, filterTxt) => {
+        setLoading(true);
+        setSearchText(text || '');
+        if(text || filterText) {
+            const resultList = masterList.filter( expense => {
+                return text ? expense.description.includes(text) : expense;
+            }).filter(expense => {
+                return filterTxt ? expense.category === filterText : expense;
+            })
             const dataSource = resultList && resultList.length ? prepareDataSource(resultList) : [];
             setList(dataSource);
+        } else{
+            setList(prepareDataSource(masterList.length ? masterList : []))
         }
+        setLoading(false);
     }
 
     renderSeparator = () => {  
@@ -65,7 +78,8 @@ export const History = () => {
                 style={{  
                     height: 1,  
                     width: "100%",  
-                    backgroundColor: "#000",  
+                    backgroundColor: "#000",
+                    opacity: 0.1
                 }}  
             />  
         );  
@@ -78,15 +92,28 @@ export const History = () => {
     );
 
     return(
-        <View style={{flex: 1, alignItems: 'center'}}>
-            <Text style = {styles.header}>Expense History</Text>
-            <TextInput
-                style={styles.textInputStyle}
-                onChangeText={text => searchAndFilter(text)}
-                value = {searchText}
-                underlineColorAndroid="transparent"
-                placeholder="Search Here"
-            />
+        <View style={styles.mainContainer}>
+            <Text style = {styles.mainTitle}>Expense History</Text>
+            <View style = {styles.searchContainer}>
+                <TextInput
+                    style={styles.textInputStyle}
+                    onChangeText={text => searchAndFilter(text)}
+                    value = {searchText}
+                    underlineColorAndroid="transparent"
+                    placeholder="Search Here"
+                />
+                <TouchableOpacity
+                    onPress={() => setIsFilterOn(!isFilterOn)}
+                    style = {styles.filterContainer}
+                >
+                    <Text style={styles.filterText}>filter</Text>
+                </TouchableOpacity>
+            </View>
+            {
+                loading ? (<View style = {styles.loaderContainer}>
+                    <ActivityIndicator size="small" color="#0000ff" />  
+                </View>) : null
+            }
             <View style={styles.sectionContainer}>
                 {
                     list.length ? (
@@ -101,8 +128,23 @@ export const History = () => {
                         />
                     ) : null
                 }
-                
             </View>
+            {
+                isFilterOn && categories ? (
+                    <Picker
+                        selectedValue={filterText}
+                        style={{height: 50, width: 100}}
+                        onValueChange={itemValue => {
+                            setFilterText(itemValue); setIsFilterOn(false); searchAndFilter(searchText, itemValue);
+                        }}
+                    >
+                        {
+                            categories.map( category => <Picker.Item key={category} label={category} value={category} />)
+                        }
+                </Picker>
+                ) : null
+            }
+            
         </View>
     )
 } 

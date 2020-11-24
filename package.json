@@ -15,7 +15,9 @@
     "firebase": "^8.1.1",
     "react": "16.13.1",
     "react-native": "0.63.3",
-    "react-native-image-picker": "^2.3.4"
+    "react-native-image-picker": "^2.3.4",
+    "react-native-vector-icons": "^7.1.0",
+    "shortid": "^2.2.16"
   },
   "devDependencies": {
     "@babel/core": "^7.12.7",

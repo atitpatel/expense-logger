@@ -1,5 +1,5 @@
 import * as firebase from 'firebase';
-import '@firebase/auth';
+import '@firebase/storage';
 import '@firebase/firestore';
 
 const firebaseConfig = {
@@ -11,6 +11,8 @@ const firebaseConfig = {
     messagingSenderId: "1006201176529",
     appId: "1:1006201176529:web:690fb05eb0dbe2528d60f0"
 };
+
+let storageRef = null;
 
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
