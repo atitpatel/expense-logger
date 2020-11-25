@@ -14,7 +14,6 @@ export const imagePickerOptions = {
 };
 
 export const getFileLocalPath = response => {
-  console.log("util func", response);
   const { path, uri } = response;
   return Platform.OS === 'android' ? path : uri;
 };

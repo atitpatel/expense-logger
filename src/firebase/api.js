@@ -11,37 +11,54 @@ const uploadImage = async response => {
         return Promise.resolve(url);
     } catch(e) {
         // Error logging
-        console.log("errror,,,,", e);
         return Promise.resolve(null);
     }
 }
 
 export const addExpense = (data, callback) => {
     const { category, date, description, amount, image } = data;
-    console.log("Image.....", image);
-    uploadImage(image).then((downloadUrl) => {
-        if(downloadUrl) {
-            firebase.firestore().collection('expenses')
-                .add({
-                    amount: amount,
-                    category: category,
-                    date: new Date(date),
-                    description: description,
-                    image: downloadUrl
-                })
-                .then( () => {
-                    console.log("Data entered successfully");
-                    callback(true);
-                }).catch( (e) => {
-                    console.log("Error", e)
-                    callback(false);
-                });
-        } else {
-            callback(false);
-        }
-    }).catch(e => {
-        callback(false)
-    });
+    if(image) {
+        uploadImage(image).then((downloadUrl) => {
+            if(downloadUrl) {
+                firebase.firestore().collection('expenses')
+                    .add({
+                        amount: amount,
+                        category: category,
+                        date: new Date(date),
+                        description: description,
+                        image: downloadUrl
+                    })
+                    .then( () => {
+                        console.log("Data entered successfully");
+                        callback(true);
+                    }).catch( (e) => {
+                        console.log("Error", e)
+                        callback(false);
+                    });
+            } else {
+                callback(false);
+            }
+        }).catch(e => {
+            callback(false)
+        });
+    } else {
+        firebase.firestore().collection('expenses')
+                    .add({
+                        amount: amount,
+                        category: category,
+                        date: new Date(date),
+                        description: description,
+                        image: null
+                    })
+                    .then( () => {
+                        console.log("Data entered successfully");
+                        callback(true);
+                    }).catch( (e) => {
+                        console.log("Error", e)
+                        callback(false);
+        });
+    }
+    
     
 };
 

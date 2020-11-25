@@ -5,16 +5,43 @@ const styles = StyleSheet.create({
         flex: 1,
         marginTop: 20,
         marginHorizontal: 16,
-        alignItems: 'center'
+        alignItems: 'center',
+        marginBottom: 150
     },
     item: {
         padding: 20,
-        marginVertical: 8
+        marginVertical: 8,
+        flexDirection: 'row',
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'space-between'
+    },
+    itemDescription: {
+        flex: 0.6,
+        fontSize: 15,
+        textAlign: 'left',
+        flexShrink: 1,
+        paddingLeft: 20
+    },
+    itemCategory: {
+        flex: 0.25,
+        fontSize: 15,
+        textAlign: 'right'
+    },
+    sectionHeaderContainer: {
+        flexDirection: 'row',
+        flex: 1
     },
     header: {
-        fontSize: 25,
+        fontSize: 20,
         flex: 1,
         textAlign: 'left',
+        fontWeight: '400'
+    },
+    headerSum: {
+        fontSize: 20,
+        flex: 1,
+        textAlign: 'right',
         fontWeight: '400'
     },
     textInputStyle: {
@@ -28,7 +55,8 @@ const styles = StyleSheet.create({
     },
     sectionContainer: {
         width: '90%',
-        marginTop: 10
+        marginTop: 10,
+        marginBottom: 20
     },
     mainTitle: {
         fontWeight: 'bold',
@@ -46,6 +74,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         height: 45,
         margin: 5
+    },
+    clearFilterRow: {
+        height: 40,
+        justifyContent: 'flex-end',
+        width: '100%'
     },
     filterText: {
         textAlign: 'center',

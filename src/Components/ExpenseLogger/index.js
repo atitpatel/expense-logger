@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
-import { View, Text, StyleSheet, TextInput, Button, TouchableOpacity, Modal,
-    TouchableHighlight, 
-    Alert} from 'react-native';
+import { View, Text, TextInput, Button, TouchableOpacity, Modal,
+    TouchableHighlight, ActivityIndicator, Alert} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import ImagePicker from 'react-native-image-picker';
 import { addExpense } from '../../firebase/api';
 import { imagePickerOptions } from '../../utils';
+import { amountError, descriptionError, categoryError,dateError }  from '../../constants';
 import styles from './styles';
 
 
@@ -20,7 +20,8 @@ const ExpenseTextInput = (props) => {
                     fontSize={15}
                     style={[styles.input, props.style]}
                 />
-            </View>
+                <Text style={styles.errorText}>{props.errorMessage}</Text>
+        </View>
     )
 }
 
@@ -77,41 +78,66 @@ export const ExpenseLogger = () => {
     const [showModal, setShowModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [imageResponse, setImageResponse ] = useState(null);
+    const [errors, setErrors ] = useState({});
 
     const clearAllFields = () => {
         setDate(new Date);
         setCategory('');
         setDescription('');
         setAmount('');
+        setImageResponse(null);
+    }
+
+    const checkValidations = () => {
+        const errs = {};
+        if(!category) {
+            errs.category = true;
+            setErrors(errs);
+        }
+        if(!amount) {
+            errs.amount = true;
+            setErrors(errs);
+        }
+        if(!description) {
+            errs.description = true;
+            setErrors(errs)
+        }
+        return errs;
     }
 
     const onSubmit = () => {
         setIsLoading(true);
-        // const errors = checkValidations();
-        try {
-            addExpense({
-                category: category,
-                description: description,
-                date: date,
-                amount: amount,
-                image: imageResponse
-            }, (result) => {
-                if(result) {
-                    Alert.alert('Expense Added Successfully');
-                } else {
-                    Alert.alert(`There's something wrong. Couldn't add data`);
-                }
+        setErrors({});
+        const errs = checkValidations();
+        if(!Object.keys(errs).length) {
+            try {
+                addExpense({
+                    category: category,
+                    description: description,
+                    date: date,
+                    amount: amount,
+                    image: imageResponse
+                }, (result) => {
+                    if(result) {
+                        Alert.alert('Expense Added Successfully');
+                    } else {
+                        Alert.alert(`There's something wrong. Couldn't add data`);
+                    }
+                    setIsLoading(false);
+                    clearAllFields();
+                });
+            } catch(e) {
+                // Error logging and reporting
                 setIsLoading(false);
-                clearAllFields();
-            });
-        } catch(e) {
-            // Error logging and reporting
+            }
+        } else {
             setIsLoading(false);
         }
+        
     }
     
     const onCancel = () => {
-        console.log("Cancelling");
+        clearAllFields();
     }
 
     const onValueChange = (key, value) => {
@@ -165,7 +191,6 @@ export const ExpenseLogger = () => {
                         onPress={() => ImagePicker.launchImageLibrary(
                             imagePickerOptions,
                             (response) => {
-                                console.log("Response....", response);
                                 if (response.didCancel) {
                                     console.log('User cancelled image picker');
                                   } else if (response.error) {
@@ -180,7 +205,7 @@ export const ExpenseLogger = () => {
                     >
                         <Text style={styles.textStyle}>From Library</Text>
                     </TouchableHighlight>
-                    <View style = {{ marginTop: 30 }}>
+                    <View style = {{ marginTop: 30, alignItems: 'flex-end' }}>
                         <Button 
                             title = "Cancel"
                             onPress={() => setShowModal(!showModal)}
@@ -201,6 +226,7 @@ export const ExpenseLogger = () => {
                     onChangeText={text => onValueChange('amount', text)}
                     keyboardType = {'decimal-pad'}
                     value={amount}
+                    errorMessage = {errors.amount ? amountError : null}
                 />
                 <ExpenseTextInput
                     title = "Description"
@@ -210,16 +236,19 @@ export const ExpenseLogger = () => {
                     value={description}
                     onChangeText={text => onValueChange('description', text)}
                     style={styles.description}
+                    errorMessage = {errors.description ? descriptionError : null}
                 />
                 <ExpenseTextInput
                     title = "Category"
                     placeholder= "e.g. Food, Travel"
                     value={category}
                     onChangeText={text => onValueChange('category', text)}
+                    errorMessage = {errors.category ? categoryError : null}
                 />
                 <ExpenseDate
                     onDateChange={(key, value) => onValueChange(key, value)}
                     value={date}
+                    errorMessage = {errors.date ? dateError : null}
                 />
                 <ExpenseImage 
                     onPress = {() => setShowModal(!showModal)}
@@ -245,6 +274,10 @@ export const ExpenseLogger = () => {
             {renderModal()}
             <Text style={styles.header}> Expense Logger</Text>
             {renderForm()}
+            {
+                isLoading ? <View style = {styles.loaderContainer}>
+                    <ActivityIndicator size="small" color="#0000ff" />  
+            </View> : null }
         </View>
     )
 }

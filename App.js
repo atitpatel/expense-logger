@@ -20,11 +20,7 @@ import {ExpenseLogger} from './src/Components/ExpenseLogger';
 import {History} from './src/Components/History';
 
 import {
-  Header,
-  LearnMoreLinks,
   Colors,
-  DebugInstructions,
-  ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
 const App: () => React$Node = () => {

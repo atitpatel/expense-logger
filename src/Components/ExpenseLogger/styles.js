@@ -12,13 +12,18 @@ const styles = StyleSheet.create({
         color: 'black',
         marginTop: 20
     },
+    loaderContainer: {
+        position: 'absolute',
+        left: '50%',
+        top: '50%'
+    },
     formContainer: {
         paddingTop: 20,
         width: '100%'
     },
     titleText: {
         fontWeight: "300",
-        color: 'orange',
+        color: 'black',
         fontSize: 16,
         alignSelf: 'center'
     },
@@ -36,6 +41,12 @@ const styles = StyleSheet.create({
         height: 45,
         paddingLeft: 15,
         alignSelf: 'center'
+    },
+    errorText: {
+        fontWeight: "400",
+        alignSelf: 'center',
+        fontSize: 12,
+        color: 'red'
     },
     inputContainer: {
         flex: 1,

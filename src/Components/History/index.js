@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, SectionList, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, SectionList, TextInput, TouchableOpacity, Alert, ActivityIndicator, Image, Button } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import { getExpenses } from '../../firebase/api';
 import { getMonthName } from '../../utils';
@@ -58,11 +58,12 @@ export const History = () => {
     searchAndFilter = (text, filterTxt) => {
         setLoading(true);
         setSearchText(text || '');
-        if(text || filterText) {
-            const resultList = masterList.filter( expense => {
+        if(text || filterTxt) {
+            let resultList = masterList.filter( expense => {
                 return text ? expense.description.includes(text) : expense;
-            }).filter(expense => {
-                return filterTxt ? expense.category === filterText : expense;
+            });
+            resultList = resultList.filter(expense => {
+                return filterTxt ? expense.category === filterTxt : expense;
             })
             const dataSource = resultList && resultList.length ? prepareDataSource(resultList) : [];
             setList(dataSource);
@@ -85,9 +86,14 @@ export const History = () => {
         );  
     };
     
-    const Expense = ({ title }) => (
+    const Expense = ({item} ) => (
         <View style={styles.item}>
-          <Text style={styles.title}>{title}</Text>
+            <Image 
+                source={{uri: item.image}}
+                style={{flex:0.15,width: 50, height: 50}} 
+            />
+          <Text style={styles.itemDescription}>{item.description}</Text>
+          <Text style ={styles.itemCategory} > $ {item.amount}</Text>
         </View>
     );
 
@@ -97,7 +103,7 @@ export const History = () => {
             <View style = {styles.searchContainer}>
                 <TextInput
                     style={styles.textInputStyle}
-                    onChangeText={text => searchAndFilter(text)}
+                    onChangeText={text => searchAndFilter(text, filterText)}
                     value = {searchText}
                     underlineColorAndroid="transparent"
                     placeholder="Search Here"
@@ -109,6 +115,15 @@ export const History = () => {
                     <Text style={styles.filterText}>filter</Text>
                 </TouchableOpacity>
             </View>
+            <View style = {styles.clearFilterRow}>
+                <Button
+                    onPress = {() => {
+                        setFilterText('');
+                        searchAndFilter(searchText, '');
+                    }}
+                    title = "Clear Filters"
+                />
+            </View>
             {
                 loading ? (<View style = {styles.loaderContainer}>
                     <ActivityIndicator size="small" color="#0000ff" />  
@@ -119,10 +134,13 @@ export const History = () => {
                     list.length ? (
                         <SectionList  
                             sections={list}
-                            renderSectionHeader={({ section: { type } }) => (
-                            <Text style={styles.header}>{type}</Text>
+                            renderSectionHeader={({ section: { type, sum } }) => (
+                                <View style={styles.sectionHeaderContainer}>
+                                    <Text style={styles.header}>{type}</Text>
+                                    <Text style={styles.headerSum}>{`$ ${sum}`}</Text>
+                            </View>
                               )}
-                            renderItem={({ item }) => <Expense title={item.description} />}
+                            renderItem={({ item }) => <Expense item={item} />}
                             ItemSeparatorComponent={renderSeparator}
                             keyExtractor = {item => item.id}  
                         />
@@ -133,7 +151,7 @@ export const History = () => {
                 isFilterOn && categories ? (
                     <Picker
                         selectedValue={filterText}
-                        style={{height: 50, width: 100}}
+                        style={{height: 40, width: 100}}
                         onValueChange={itemValue => {
                             setFilterText(itemValue); setIsFilterOn(false); searchAndFilter(searchText, itemValue);
                         }}
